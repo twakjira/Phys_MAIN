@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phys-MAIN: Physics-Informed Monotone Additive Interaction Network for Design-Oriented Shear Capacity Prediction and Resistance Factor Calibration of UHPC Beams</title>
+<meta name="description" content="Phys-MAIN: physics-informed interaction network with distribution-free conformal prediction intervals for UHPC beam shear capacity. Under review.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+<style>
+  /* ─── Reset & base ───────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #333;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #4A90D9; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  :root { --accent: #4A90D9; --accent-2: #3b7bc9; }
+
+  /* ─── Layout ─────────────────────────────────────── */
+  .section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  .section.wide { max-width: 1080px; }
+
+  /* ─── Title section ──────────────────────────────── */
+  .title-section {
+    text-align: center;
+    padding-top: 4rem;
+    padding-bottom: 1.5rem;
+  }
+  .project-title {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: #222;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  .project-title .accent {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .authors {
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+  }
+  .authors a { font-weight: 500; color: var(--accent); }
+  .affiliations {
+    font-size: 0.92rem;
+    color: #777;
+    margin-bottom: 0.8rem;
+  }
+  .affiliations span {
+    margin: 0 0.5rem;
+    white-space: nowrap;
+  }
+  .venue { margin-bottom: 1.5rem; }
+  .venue-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+    background: #f0f0f0;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+  }
+  .venue-badge.review {
+    background: #fff8e6;
+    color: #7a5a00;
+    border: 1px solid #ffe7a8;
+  }
+
+  /* ─── Action buttons ────────────────────────────── */
+  .buttons-row {
+    display: flex; justify-content: center;
+    gap: 0.75rem; flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.58rem 1.35rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+    background: #fff;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    font-family: 'Noto Sans', sans-serif;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    background: #f7faff;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+  .btn-disabled { opacity: 0.55; cursor: default; pointer-events: none; }
+  .btn-note { font-size: 0.78rem; color: #999; font-weight: 400; }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-2); border-color: var(--accent-2); color: white; }
+
+  /* ─── Section headings ──────────────────────────── */
+  h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #eee;
+    letter-spacing: -0.01em;
+  }
+
+  /* ─── Abstract ──────────────────────────────────── */
+  .abstract-text {
+    text-align: justify;
+    hyphens: auto;
+  }
+  .caption {
+    font-size: 0.92rem;
+    color: #666;
+    text-align: center;
+    margin: 0.6rem 0 1rem 0;
+    line-height: 1.55;
+  }
+
+  /* ─── Module list (Method) ──────────────────────── */
+  .module-list {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .module-list p {
+    margin: 0;
+    padding: 0.4rem 0 0.4rem 0.8rem;
+    border-left: 3px solid var(--accent);
+    line-height: 1.6;
+  }
+  .module-list p strong { color: #1f2937; font-weight: 600; }
+
+  /* ─── Results tabs ──────────────────────────────── */
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    margin: 1rem 0;
+    justify-content: center;
+  }
+  .tab-btn {
+    padding: 0.5rem 1.15rem;
+    border: 1.5px solid #d0d0d0;
+    background: #fff;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans', sans-serif;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadein 0.3s ease-out; }
+  .chart-box {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1rem 1rem 0.5rem 1rem;
+    background: #fff;
+  }
+
+  /* ─── Interactive tool (framed, light, distinctive) ── */
+  .demo-wrapper {
+    max-width: 1080px;
+    margin: 3rem auto 1.5rem;
+    padding: 0 1.5rem;
+  }
+  .demo-section {
+    position: relative;
+    background:
+      radial-gradient(900px 400px at 90% -20%, rgba(74,144,217,0.10) 0%, transparent 60%),
+      radial-gradient(700px 300px at 0% 120%, rgba(42,168,118,0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #f3f7fc 0%, #eef4fb 50%, #eaf2fa 100%);
+    padding: 2.8rem 2rem 3rem;
+    border-radius: 22px;
+    border: 1px solid rgba(74,144,217,0.22);
+    color: #222;
+    overflow: hidden;
+    box-shadow:
+      0 18px 50px -18px rgba(30,58,138,0.18),
+      0 0 0 1px rgba(255,255,255,0.6) inset;
+  }
+  .demo-section::before {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(rgba(74,144,217,0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+    pointer-events: none;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.45), transparent 80%);
+    border-radius: 22px;
+  }
+  .demo-section::after {
+    content: ""; position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4A90D9 0%, #60a5fa 25%, #2aa876 50%, #60a5fa 75%, #4A90D9 100%);
+    background-size: 300% 100%;
+    animation: stripeShimmer 9s ease-in-out infinite;
+    border-radius: 22px 22px 0 0;
+    pointer-events: none;
+  }
+  @keyframes stripeShimmer {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 100% 0%; }
+  }
+  .demo-inner { position: relative; }
+  @media (max-width: 720px) {
+    .demo-wrapper { padding: 0 0.8rem; }
+    .demo-section { padding: 2.2rem 1.2rem 2.6rem; border-radius: 18px; }
+  }
+
+  .demo-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid rgba(74,144,217,0.18);
+  }
+  .demo-kicker {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #1d4ed8;
+    background: linear-gradient(135deg, rgba(74,144,217,0.12) 0%, rgba(42,168,118,0.10) 100%);
+    border: 1px solid rgba(74,144,217,0.28);
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 1.1rem;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px -2px rgba(30,58,138,0.10);
+  }
+  .demo-kicker i { font-size: 0.78rem; }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 999px;
+    background: #2aa876;
+    box-shadow: 0 0 0 0 rgba(42,168,118,0.6);
+    animation: livePulse 1.8s infinite;
+  }
+  @keyframes livePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(42,168,118,0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(42,168,118,0);    }
+    100% { box-shadow: 0 0 0 0 rgba(42,168,118,0);      }
+  }
+
+  /* Smooth number change on metric cards */
+  .metric-card .value { transition: color 0.2s; }
+  .metric-card.flash .value { color: #1d4ed8; }
+  .metric-card.accent-green.flash .value,
+  .metric-card.primary.flash .value { color: #ffffff; }
+
+  /* Subtle scale-in on toggle row activation */
+  .toggle-row { transition: background 0.18s, border-color 0.18s, box-shadow 0.18s; }
+  .toggle-row.active { box-shadow: 0 2px 10px -4px rgba(74,144,217,0.35); }
+
+  /* Field-input lift on focus */
+  .field-input { transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
+  .demo-header h2 {
+    border-bottom: none !important;
+    color: #1a2a4a !important;
+    font-size: 1.95rem !important;
+    margin: 0 0 0.5rem 0 !important;
+    padding: 0 !important;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .demo-header p {
+    color: #52607a;
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .demo-surface {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 20px -14px rgba(15,23,42,0.14);
+  }
+
+  .demo-section .btn-predict {
+    background: linear-gradient(135deg, #1d4ed8 0%, #4A90D9 100%);
+    box-shadow: 0 6px 20px rgba(74,144,217,0.35);
+    padding: 1rem 2.3rem;
+    font-size: 1.02rem;
+  }
+  .demo-section .btn-predict:hover {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b7bc9 100%);
+    box-shadow: 0 10px 28px rgba(30,58,138,0.45);
+  }
+  .section-label {
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: #555;
+    display: flex; align-items: center; gap: 0.55rem;
+    margin-bottom: 1rem;
+  }
+  .section-label::before {
+    content: ""; display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .field-label {
+    font-size: 0.85rem; color: #444; font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.35rem;
+  }
+  .field-input {
+    width: 100%; padding: 0.55rem 0.75rem;
+    border: 1.5px solid #ddd; border-radius: 8px; background: white;
+    font-size: 0.94rem; font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: 'Noto Sans', sans-serif;
+  }
+  .field-input:hover { border-color: #bbb; }
+  .field-input:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(74,144,217,0.14);
+  }
+  .group-heading {
+    font-size: 0.72rem; font-weight: 700; color: #777;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding-bottom: 0.55rem; margin-bottom: 0.9rem;
+    border-bottom: 1px solid #eee;
+  }
+  .mb-3\\.5 { margin-bottom: 0.9rem; }
+
+  /* ─── Toggle ────────────────────────────────────── */
+  .toggle {
+    position: relative; display: inline-flex;
+    height: 1.35rem; width: 2.5rem;
+    flex-shrink: 0; cursor: pointer; border-radius: 999px;
+    background: #d0d6de; transition: background 0.2s;
+    border: none; padding: 0;
+  }
+  .toggle[aria-checked="true"] { background: var(--accent); }
+  .toggle .knob {
+    position: absolute; top: 2px; left: 2px;
+    height: 0.95rem; width: 0.95rem; border-radius: 999px;
+    background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    transition: transform 0.2s;
+  }
+  .toggle[aria-checked="true"] .knob { transform: translateX(1.15rem); }
+
+  .toggle-row {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    background: #fafbfc;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .toggle-row:hover { background: #f4f6f9; }
+  .toggle-row.active { background: #f7faff; border-color: #c9daf2; }
+  .toggle-row .icon {
+    width: 1.9rem; height: 1.9rem; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    background: white; border: 1px solid #e3e6ea;
+    color: #6b7280; flex-shrink: 0;
+  }
+  .toggle-row.active .icon { color: var(--accent); border-color: #bfd4ee; }
+  .toggle-row .labels { flex: 1; min-width: 0; line-height: 1.2; }
+  .toggle-row .ttl { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
+  .toggle-row .sub { font-size: 0.75rem; color: #777; margin-top: 1px; }
+
+  /* ─── Predict button ────────────────────────────── */
+  .btn-predict {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    padding: 0.85rem 2rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    font-family: 'Noto Sans', sans-serif;
+    box-shadow: 0 3px 10px rgba(74,144,217,0.25);
+  }
+  .btn-predict:hover { background: var(--accent-2); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(74,144,217,0.35); }
+
+  /* ─── Metric cards ──────────────────────────────── */
+  .grid { display: grid; gap: 0.75rem; }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 800px) {
+    .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .metric-card {
+    background: white;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+  }
+  .metric-card .label {
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: #777; margin-bottom: 0.4rem;
+  }
+  .metric-card .value {
+    font-size: 1.85rem; font-weight: 700;
+    color: #1f2937; line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-card .unit { font-size: 0.9rem; color: #777; margin-left: 0.3rem; font-weight: 500; }
+  .metric-card.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .metric-card.primary .label { color: rgba(255,255,255,0.85); }
+  .metric-card.primary .value, .metric-card.primary .unit { color: white; }
+  .metric-card.accent-green {
+    background: #2aa876;
+    border-color: #2aa876;
+  }
+  .metric-card.accent-green .label { color: rgba(255,255,255,0.85); }
+  .metric-card.accent-green .value, .metric-card.accent-green .unit { color: white; }
+
+  /* ─── BibTeX ────────────────────────────────────── */
+  .bibtex-block {
+    position: relative;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+  }
+  .bibtex-block pre { margin: 0; }
+  .bibtex-block code {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.84rem;
+    color: #333;
+    line-height: 1.65;
+    white-space: pre;
+  }
+  .copy-btn {
+    position: absolute; top: 0.6rem; right: 0.7rem;
+    padding: 0.32rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #555;
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-family: 'Noto Sans', sans-serif;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { color: #2aa876; border-color: #2aa876; }
+
+  /* ─── Footer ────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+    padding: 2rem 1.5rem 3rem;
+    border-top: 1px solid #eee;
+    margin-top: 2rem;
+  }
+  .footer a { color: var(--accent); }
+
+  /* ─── KaTeX tweaks ──────────────────────────────── */
+  .katex { font-size: 1em; }
+  .eq-center { text-align: center; }
+  .eq-big .katex { font-size: 1.15em; }
+
+  /* ─── Animations ────────────────────────────────── */
+  .fadein { animation: fadein 0.3s ease-out; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+
+<body>
+
+<!-- ─── Title section ────────────────────────────────── -->
+<section class="section title-section">
+  <h1 class="project-title">
+    <span class="accent">Phys-MAIN</span>: Physics-Informed Monotone Additive Interaction Network for Design-Oriented Shear Capacity Prediction and Resistance Factor Calibration of UHPC Beams
+  </h1>
+  <div class="authors">
+    <a href="https://ai4riselab.com" target="_blank" rel="noopener">Tadesse G. Wakjira</a><sup>1</sup>,
+    <a href="https://hanagoshu.com" target="_blank" rel="noopener">Hana L. Goshu</a><sup>2</sup>
+  </div>
+  <div class="affiliations">
+    <span><sup>1</sup>Kennesaw State University</span>
+    <span><sup>2</sup>The Hong Kong Polytechnic University</span>
+  </div>
+  <div class="venue">
+    <span class="venue-badge review">
+      <i class="fa-regular fa-clock"></i> Under Review
+    </span>
+  </div>
+  <div class="buttons-row">
+    <a class="btn btn-disabled" href="#" onclick="return false;" title="Coming soon">
+      <i class="fa-solid fa-file-pdf"></i> Paper <span class="btn-note">(coming soon)</span>
+    </a>
+    <a class="btn btn-primary" href="#predictor">
+      <i class="fa-solid fa-play"></i> Try the predictor
+    </a>
+    <a class="btn" href="https://github.com/twakjira/Phys_MAIN" target="_blank" rel="noopener">
+      <i class="fa-brands fa-github"></i> Code <span class="btn-note">(on acceptance)</span>
+    </a>
+    <a class="btn" href="https://ai4riselab.com" target="_blank" rel="noopener">
+      <i class="fa-solid fa-flask"></i> AI4RISE Lab
+    </a>
+  </div>
+</section>
+
+<!-- ─── Abstract ────────────────────────────────────── -->
+<section class="section">
+  <h2>Abstract</h2>
+  <p class="abstract-text">
+    The shear failure of ultra-high performance concrete (UHPC) beams is governed by the complex
+    interaction among fibre bridging, aggregate interlock, dowel action, and size-dependent fracture
+    mechanics. However, the effect of these interactions on the shear capacity is not well
+    understood, and current design-code provisions do not account for them adequately, leading to
+    large prediction scatter and uncertain safety margins. This study introduces
+    <strong>Phys-MAIN</strong>, a physics-informed and interpretable Monotone Additive Interaction
+    Network for design-oriented shear capacity prediction and resistance factor calibration of UHPC
+    beams, developed on an experimental database of 510 specimens across four reinforcement
+    configurations. Each configuration-specific submodel operates on a mechanism-motivated feature
+    subset with monotone piecewise-linear shape functions that enforce physically consistent
+    relationships, complemented by bivariate interaction surfaces. Distribution-free conformal
+    prediction intervals provide finite-sample coverage without residual-distribution assumptions.
+    Configuration-specific resistance factors are calibrated under the ACI&nbsp;318 LRFD framework at
+    a target reliability index of $\beta_T = 3.5$. Phys-MAIN achieves a cross-validated
+    $R^2 = 0.933$ with zero physical monotonicity violations, and reveals that reinforcement type
+    strongly governs the required safety margin (calibrated $\phi$ ranges from 0.485 for fibre-only
+    beams to 0.625 for fibre + prestress beams).
+  </p>
+</section>
+
+<!-- ─── Method ──────────────────────────────────────── -->
+<section class="section">
+  <h2>Method</h2>
+  <p class="caption">
+    Phys-MAIN combines four configuration-specific submodels within an adaptive neuro-fuzzy
+    inference system (ANFIS), equipped with physics-informed constraints and distribution-free
+    uncertainty quantification.
+  </p>
+  <div class="eq-center eq-big" style="margin: 1rem 0 1.2rem 0;">
+    $$\log V_u \;=\; \sum_{r=1}^{4} \bar w_r(\mathbf{x}) \cdot \left[ \sum_i \phi_r^{(i)}(x_i) \;+\; \sum_{(i,j)} \psi_r^{(ij)}(x_i, x_j) \;+\; b_r \right]$$
+  </div>
+  <div class="module-list">
+    <p><strong>Configuration-specific submodels</strong> &mdash; Four mechanism-motivated submodels (fibre only, fibre + stirrups, fibre + prestress, no fibre) operate on physically relevant feature subsets within an ANFIS architecture, avoiding the mechanism-mixing that plagues global ML surrogates.</p>
+    <p><strong>Monotone shape functions</strong> &mdash; Piecewise-linear univariate shape functions with pool-adjacent-violator projection enforce sign-correct sensitivities, achieving a 0% violation rate across all monotonicity-constrained features.</p>
+    <p><strong>Bivariate interaction surfaces</strong> &mdash; Tensor-product monotone grids capture the nonlinear interactions established by fracture mechanics theory (size effect, fibre&ndash;matrix synergy, prestress&ndash;concrete bond).</p>
+    <p><strong>Distribution-free conformal intervals</strong> &mdash; Split-conformal calibration on held-out residuals delivers finite-sample coverage guarantees, yielding a rigorous lower-bound design resistance $V_d = V_u / \gamma_{CRC}$ without residual-distribution assumptions.</p>
+    <p><strong>Configuration-specific LRFD calibration</strong> &mdash; Resistance factors are calibrated across four reinforcement configurations and five shear-mechanism sub-populations under ACI&nbsp;318 LRFD at $\beta_T = 3.5$.</p>
+  </div>
+</section>
+
+<!-- ─── Main Results ────────────────────────────────── -->
+<section class="section wide">
+  <h2>Main Results</h2>
+  <p class="caption">
+    Out-of-fold predictions on 510 UHPC beam specimens, calibrated resistance factors per
+    reinforcement configuration, and physics-violation rates versus baseline machine-learning models.
+  </p>
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="scatter">Predicted vs Experimental</button>
+    <button class="tab-btn" data-tab="phi">Resistance factors</button>
+    <button class="tab-btn" data-tab="viol">Physics violations</button>
+  </div>
+  <div class="chart-box">
+    <div class="tab-panel active" data-panel="scatter">
+      <div id="plot-scatter" style="width:100%; height:460px;"></div>
+      <p class="caption">
+        OOF predictions coloured by reinforcement configuration; dashed line is the 1:1 reference.
+        Phys-MAIN achieves $R^2 = 0.933$.
+      </p>
+    </div>
+    <div class="tab-panel" data-panel="phi">
+      <div id="plot-phi" style="width:100%; height:420px;"></div>
+      <p class="caption">
+        ACI 318/LRFD resistance factors $\phi^{\ast}$ calibrated at $\beta_T = 3.5$.
+      </p>
+    </div>
+    <div class="tab-panel" data-panel="viol">
+      <div id="plot-viol" style="width:100%; height:460px;"></div>
+      <p class="caption">
+        Physics-violation rate per monotonicity-constrained feature (% of specimens where a +10%
+        perturbation decreases predicted capacity). Phys-MAIN shows zero violations across all features.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Predictor (distinct framed box within white page) ── -->
+<div class="demo-wrapper" id="predictor">
+<section class="demo-section">
+  <div class="demo-inner">
+    <div class="demo-header">
+      <span class="demo-kicker"><span class="live-dot"></span> Prediction Tool</span>
+      <h2>Shear Capacity Predictor</h2>
+      <p>Configure the beam and inspect the predicted shear capacity with distribution-free conformal prediction intervals.</p>
+    </div>
+
+  <div class="demo-surface">
+    <p class="section-label">Configuration</p>
+    <div class="grid grid-2" style="margin-bottom: 1rem;">
+      <div>
+        <label class="field-label"><span>Preset</span></label>
+        <select id="preset" class="field-input">
+          <option value="fiber_only">Fibre only</option>
+          <option value="fiber_stirrup">Fibre + stirrup</option>
+          <option value="fiber_prestress">Fibre + prestress</option>
+          <option value="no_fiber">No fibre</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label"><span>Confidence level</span></label>
+        <select id="conf" class="field-input">
+          <option>50%</option><option>80%</option><option>90%</option>
+          <option selected>95%</option><option>99%</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-4">
+      <div class="toggle-row" data-row="hasFiber">
+        <span class="icon"><i class="fa-solid fa-grip-lines"></i></span>
+        <div class="labels"><div class="ttl">Steel fibres</div><div class="sub">Fibre-reinforced UHPC</div></div>
+        <button class="toggle" role="switch" aria-checked="true" data-toggle="hasFiber"><span class="knob"></span></button>
+      </div>
+      <div class="toggle-row" data-row="hasStirrup">
+        <span class="icon"><i class="fa-solid fa-bars"></i></span>
+        <div class="labels"><div class="ttl">Transverse stirrups</div><div class="sub">Shear reinforcement</div></div>
+        <button class="toggle" role="switch" aria-checked="false" data-toggle="hasStirrup"><span class="knob"></span></button>
+      </div>
+      <div class="toggle-row" data-row="hasPrestress">
+        <span class="icon"><i class="fa-solid fa-arrows-left-right"></i></span>
+        <div class="labels"><div class="ttl">Prestress</div><div class="sub">Pre-/post-tensioned</div></div>
+        <button class="toggle" role="switch" aria-checked="false" data-toggle="hasPrestress"><span class="knob"></span></button>
+      </div>
+      <div class="toggle-row" data-row="isFlanged">
+        <span class="icon"><i class="fa-solid fa-t"></i></span>
+        <div class="labels"><div class="ttl">Flanged section</div><div class="sub">T- or I-beam</div></div>
+        <button class="toggle" role="switch" aria-checked="false" data-toggle="isFlanged"><span class="knob"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-surface">
+    <p class="section-label">Beam inputs</p>
+    <div class="grid grid-3" id="inputGrid"></div>
+  </div>
+
+  <div style="text-align:center; margin: 1.2rem 0 1.8rem 0;">
+    <button id="predictBtn" class="btn-predict">
+      <i class="fa-solid fa-play"></i> Predict shear capacity
+    </button>
+  </div>
+
+  <div id="result"></div>
+  </div><!-- /.demo-inner -->
+</section>
+</div><!-- /.demo-wrapper -->
+
+<!-- ─── BibTeX ──────────────────────────────────────── -->
+<section class="section">
+  <h2>BibTeX</h2>
+  <div class="bibtex-block">
+    <button class="copy-btn" id="copy-bibtex" title="Copy to clipboard">
+      <i class="fa-regular fa-copy"></i> Copy
+    </button>
+    <pre><code id="bibtex-text">@article{wakjira2026physmain,
+    title   = {Phys-MAIN: Physics-Informed Monotone Additive Interaction Network for Design-Oriented Shear Capacity Prediction and Resistance Factor Calibration of UHPC Beams},
+    author  = {Wakjira, Tadesse G. and Goshu, Hana L.},
+    journal = {Under Review},
+    year    = {2026},
+    note    = {Under Review}
+}</code></pre>
+  </div>
+</section>
+
+<!-- ─── Footer ──────────────────────────────────────── -->
+<footer class="footer">
+  <p>
+    Developed by <a href="https://ai4riselab.com" target="_blank" rel="noopener">AI4RISE Lab</a>.
+    Source code and trained weights will be released upon paper acceptance.
+  </p>
+</footer>
+
+<!-- ─── Charts ──────────────────────────────────────── -->
+<script>
+(async () => {
+  const R = await fetch('./results.json').then(r => r.json());
+  const CFG_COLORS = ['#4A90D9', '#2aa876', '#a66dd4', '#e3b33a'];
+  const FONT = { family: 'Noto Sans, sans-serif' };
+
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels  = document.querySelectorAll('.tab-panel');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = document.querySelector(`.tab-panel[data-panel="${btn.dataset.tab}"]`);
+      panel.classList.add('active');
+      const chart = panel.querySelector('[id^="plot-"]');
+      if (chart) Plotly.Plots.resize(chart);
+    });
+  });
+
+  // Scatter
+  {
+    const s = R.scatter;
+    const traces = s.cfg_names.map((name, i) => {
+      const mask = s.cfg.map(c => c === i);
+      return {
+        x: s.y_true.filter((_, k) => mask[k]),
+        y: s.MAIN.filter((_, k) => mask[k]),
+        mode: 'markers', type: 'scattergl', name,
+        marker: { size: 7, color: CFG_COLORS[i], opacity: 0.82,
+                  line: { width: 0.5, color: 'white' } },
+        hovertemplate: `<b>${name}</b><br>Exp: %{x:.0f} kN<br>Pred: %{y:.0f} kN<extra></extra>`,
+      };
+    });
+    const maxV = Math.max(...s.y_true, ...s.MAIN) * 1.05;
+    traces.push({
+      x: [0, maxV], y: [0, maxV], mode: 'lines', type: 'scatter',
+      line: { color: '#555', width: 1.3, dash: 'dash' },
+      name: '1:1', hoverinfo: 'skip',
+    });
+    Plotly.newPlot('plot-scatter', traces, {
+      margin: { l: 70, r: 20, t: 20, b: 60 },
+      plot_bgcolor: 'white', paper_bgcolor: 'white',
+      xaxis: { title: { text: 'Experimental V<sub>u</sub> [kN]', font: { size: 13, color: '#444' } },
+               gridcolor: '#f0f0f0', zeroline: false, range: [0, maxV],
+               tickfont: { size: 11, color: '#666' } },
+      yaxis: { title: { text: 'Predicted V<sub>u</sub> [kN]', font: { size: 13, color: '#444' } },
+               gridcolor: '#f0f0f0', zeroline: false, range: [0, maxV],
+               scaleanchor: 'x', scaleratio: 1,
+               tickfont: { size: 11, color: '#666' } },
+      font: FONT,
+      legend: { orientation: 'h', y: -0.18, x: 0.5, xanchor: 'center',
+                font: { size: 11 }, bgcolor: 'rgba(255,255,255,0)' },
+    }, { responsive: true, displayModeBar: false });
+  }
+
+  // Phi
+  {
+    const rel = R.reliability;
+    const colors = ['#1f2937', '#4A90D9', '#2aa876', '#a66dd4', '#e3b33a'];
+    const trace = {
+      x: rel.map(r => r.name),
+      y: rel.map(r => r.phi),
+      type: 'bar',
+      marker: { color: rel.map((_, i) => colors[i % colors.length]) },
+      text: rel.map(r => `${r.phi.toFixed(3)}`),
+      textposition: 'outside',
+      textfont: { size: 12, color: '#333' },
+      hovertemplate: '<b>%{x}</b><br>φ* = %{y:.3f}<br>γ_R = %{customdata[0]:.3f}<br>N = %{customdata[1]}<extra></extra>',
+      customdata: rel.map(r => [r.gamma_r, r.n]),
+    };
+    Plotly.newPlot('plot-phi', [trace], {
+      margin: { l: 70, r: 20, t: 30, b: 80 },
+      plot_bgcolor: 'white', paper_bgcolor: 'white',
+      xaxis: { tickfont: { size: 12, color: '#444' }, tickangle: -15 },
+      yaxis: { title: { text: 'Resistance factor φ*', font: { size: 13, color: '#444' } },
+               gridcolor: '#f0f0f0', zeroline: false, range: [0, 0.85],
+               tickfont: { size: 11, color: '#666' } },
+      font: FONT, showlegend: false,
+    }, { responsive: true, displayModeBar: false });
+  }
+
+  // Violations
+  {
+    const v = R.violations;
+    const modelColors = { MAIN: '#4A90D9', GB: '#e3b33a', RF: '#2aa876', MLP: '#a66dd4' };
+    const modelLabels = { MAIN: 'Phys-MAIN', GB: 'GBDT', RF: 'Random Forest', MLP: 'MLP' };
+    const traces = ['MAIN', 'GB', 'RF', 'MLP'].map(k => ({
+      x: v.features, y: v[k], type: 'bar',
+      name: modelLabels[k], marker: { color: modelColors[k] },
+      hovertemplate: `<b>${modelLabels[k]}</b><br>%{x}: %{y:.1f}%<extra></extra>`,
+    }));
+    Plotly.newPlot('plot-viol', traces, {
+      margin: { l: 70, r: 20, t: 30, b: 70 },
+      plot_bgcolor: 'white', paper_bgcolor: 'white',
+      barmode: 'group',
+      xaxis: { tickfont: { size: 12, color: '#444' } },
+      yaxis: { title: { text: 'Violation rate [%]', font: { size: 13, color: '#444' } },
+               gridcolor: '#f0f0f0', zeroline: false,
+               tickfont: { size: 11, color: '#666' } },
+      font: FONT,
+      legend: { orientation: 'h', y: 1.12, x: 0.5, xanchor: 'center',
+                font: { size: 12 }, bgcolor: 'rgba(255,255,255,0)' },
+    }, { responsive: true, displayModeBar: false });
+  }
+})();
+
+// Copy BibTeX button
+document.getElementById('copy-bibtex').addEventListener('click', function() {
+  const text = document.getElementById('bibtex-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    this.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+      this.classList.remove('copied');
+    }, 2000);
+  });
+});
+</script>
+
+<!-- ─── Predictor ──────────────────────────────────── -->
+<script type="module">
+import { predict, classifyConfig } from './inference.js';
+
+const PRESETS = {
+  fiber_only:      { hasFiber: true,  hasStirrup: false, hasPrestress: false,
+                     values: { h:300, b:100, m:3, 'ρl':0.035, fsy:500, fc:140, 'ρf':2, lf:13, df:0.2, 'λf':65 } },
+  fiber_stirrup:   { hasFiber: true,  hasStirrup: true,  hasPrestress: false,
+                     values: { h:300, b:100, m:3, 'ρl':0.035, fsy:500, fc:140, 'ρf':2, lf:13, df:0.2, 'λf':65, 'ρsv':0.003, fsv:500 } },
+  fiber_prestress: { hasFiber: true,  hasStirrup: false, hasPrestress: true,
+                     values: { h:300, b:100, m:3, 'ρl':0.035, fsy:500, fc:140, 'ρf':2, lf:13, df:0.2, 'λf':65, 'ρp':0.012, 'σp':1200 } },
+  no_fiber:        { hasFiber: false, hasStirrup: true,  hasPrestress: false,
+                     values: { h:300, b:100, m:3, 'ρl':0.035, fsy:500, fc:140, 'ρsv':0.003, fsv:500 } },
+};
+const META = {
+  h:   { latex: 'h',             unit: 'mm',  help: 'Cross-section total depth' },
+  b:   { latex: 'b',             unit: 'mm',  help: 'Web width' },
+  bf1: { latex: 'b_{f1}',        unit: 'mm',  help: 'Top flange width' },
+  tf1: { latex: 't_{f1}',        unit: 'mm',  help: 'Top flange thickness' },
+  bf2: { latex: 'b_{f2}',        unit: 'mm',  help: 'Bottom flange width' },
+  tf2: { latex: 't_{f2}',        unit: 'mm',  help: 'Bottom flange thickness' },
+  'ρl':{ latex: '\\rho_{\\ell}', unit: '—',  help: 'Longitudinal reinforcement ratio' },
+  fsy: { latex: 'f_{sy}',        unit: 'MPa', help: 'Longitudinal yield strength' },
+  'ρp':{ latex: '\\rho_{p}',     unit: '—',  help: 'Prestress ratio' },
+  'σp':{ latex: '\\sigma_{p}',   unit: 'MPa', help: 'Prestress stress' },
+  'ρsv':{latex: '\\rho_{sv}',    unit: '—',  help: 'Stirrup ratio' },
+  fsv: { latex: 'f_{sv}',        unit: 'MPa', help: 'Stirrup yield strength' },
+  fc:  { latex: 'f_{c}',         unit: 'MPa', help: 'Concrete compressive strength' },
+  'ρf':{ latex: '\\rho_{f}',     unit: '%',  help: 'Fibre volume fraction' },
+  lf:  { latex: '\\ell_{f}',     unit: 'mm',  help: 'Fibre length' },
+  df:  { latex: 'd_{f}',         unit: 'mm',  help: 'Fibre diameter' },
+  'λf':{ latex: '\\lambda_{f}',  unit: '—',  help: 'Fibre aspect ratio' },
+  m:   { latex: 'a/d',           unit: '—',  help: 'Shear-span ratio' },
+};
+const state = { hasFiber: true, hasStirrup: false, hasPrestress: false, isFlanged: false, values: {} };
+const model = await fetch('./model.json').then(r => r.json());
+
+document.querySelectorAll('[data-toggle]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    state[btn.dataset.toggle] = !state[btn.dataset.toggle];
+    syncToggles(); renderInputs();
+    scheduleLiveUpdate();
+  });
+});
+document.getElementById('preset').addEventListener('change', e => applyPreset(e.target.value));
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  state.hasFiber = p.hasFiber; state.hasStirrup = p.hasStirrup; state.hasPrestress = p.hasPrestress;
+  state.values = { ...p.values };
+  syncToggles(); renderInputs();
+  scheduleLiveUpdate();
+}
+function syncToggles() {
+  document.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.setAttribute('aria-checked', state[btn.dataset.toggle]);
+  });
+  document.querySelectorAll('[data-row]').forEach(row => {
+    row.classList.toggle('active', state[row.dataset.row]);
+  });
+}
+function activeFeats() {
+  const geom  = ['h','b','m'].concat(state.isFlanged ? ['bf1','tf1','bf2','tf2'] : []);
+  const reinf = ['ρl','fsy']
+    .concat(state.hasStirrup   ? ['ρsv','fsv'] : [])
+    .concat(state.hasPrestress ? ['ρp','σp']   : []);
+  const conc  = ['fc'].concat(state.hasFiber ? ['ρf','lf','df','λf'] : []);
+  return { 'Geometry': geom, 'Reinforcement': reinf, 'Concrete & fibre': conc };
+}
+function renderInputs() {
+  const grid = document.getElementById('inputGrid');
+  grid.innerHTML = '';
+  const groups = activeFeats();
+  for (const [title, feats] of Object.entries(groups)) {
+    const col = document.createElement('div');
+    col.innerHTML = `<p class="group-heading">${title}</p>`;
+    for (const f of feats) {
+      const m = META[f];
+      const s = model.stats[f];
+      const cur = state.values[f] ?? s.med;
+      const clamped = Math.min(Math.max(cur, s.min), s.max);
+      state.values[f] = clamped;
+      const step = Math.max((s.max - s.min) / 200, 1e-4);
+      const fmt = s.max < 10 ? 4 : 2;
+      col.innerHTML += `
+        <div style="margin-bottom:0.85rem;">
+          <label class="field-label" title="${m.help}">
+            <span>$${m.latex}$<span style="color:#999; margin-left:4px; font-weight:400;">[${m.unit}]</span></span>
+            <span style="font-size:0.72rem; color:#aaa;">${s.min}&ndash;${s.max}</span>
+          </label>
+          <input class="field-input" type="number" data-feat="${f}"
+                 min="${s.min}" max="${s.max}" step="${step}"
+                 value="${clamped.toFixed(fmt)}">
+        </div>`;
+    }
+    grid.appendChild(col);
+  }
+  grid.querySelectorAll('input[data-feat]').forEach(el => {
+    el.addEventListener('input', e => {
+      state.values[e.target.dataset.feat] = parseFloat(e.target.value) || 0;
+      scheduleLiveUpdate();
+    });
+  });
+  if (window.renderMathInElement) {
+    renderMathInElement(grid, { delimiters: [{left:'$',right:'$',display:false}], throwOnError: false });
+  }
+}
+
+document.getElementById('predictBtn').addEventListener('click', () => runPredict({ scroll: true }));
+document.getElementById('conf').addEventListener('change', () => runPredict({ scroll: false }));
+
+// Live auto-update: debounced re-run on any input / toggle / preset change
+let _liveTimer = null;
+function scheduleLiveUpdate() {
+  clearTimeout(_liveTimer);
+  _liveTimer = setTimeout(() => runPredict({ scroll: false }), 140);
+}
+
+function runPredict({ scroll = false } = {}) {
+  const xByName = {};
+  for (const f of model.all_feats) xByName[f] = 0;
+  for (const f of Object.keys(state.values)) xByName[f] = state.values[f];
+  if (!state.hasFiber)     ['ρf','lf','df','λf'].forEach(f => xByName[f] = 0);
+  if (!state.hasStirrup)   ['ρsv','fsv'].forEach(f => xByName[f] = 0);
+  if (!state.hasPrestress) ['ρp','σp'].forEach(f => xByName[f] = 0);
+  if (!state.isFlanged)    ['bf1','tf1','bf2','tf2'].forEach(f => xByName[f] = 0);
+
+  const vu = predict(model, xByName);
+  const cfgIdx = classifyConfig(xByName);
+  const cfgName = model.config_names[cfgIdx];
+  const conf = document.getElementById('conf').value;
+  const gRow = model.gamma_crc.find(r => r.label === conf);
+  const { gamma_crc, alpha, picp } = gRow;
+  const vLo = vu / gamma_crc, vHi = vu * gamma_crc, vDesign = vLo;
+
+  renderResult({ vu, vLo, vHi, vDesign, gamma_crc, alpha, picp, conf, cfgIdx, cfgName, xByName });
+  if (scroll) {
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Animated count-up for numeric metrics
+function animateCountUp(el, target, { duration = 500, fmt } = {}) {
+  if (!el) return;
+  const start = parseFloat(el.dataset.val || 0);
+  const t0 = performance.now();
+  const card = el.closest('.metric-card');
+  if (card) { card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 260); }
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function step(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    const v = start + (target - start) * ease(t);
+    el.innerHTML = fmt(v);
+    if (t < 1) requestAnimationFrame(step);
+    else { el.dataset.val = target; el.innerHTML = fmt(target); }
+  }
+  requestAnimationFrame(step);
+}
+const fmtKN = v => v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+function renderResult({ vu, vLo, vHi, vDesign, gamma_crc, alpha, picp, conf, cfgIdx, cfgName, xByName }) {
+  const ranges = model.stats;
+  const oor = [];
+  for (const f of model.all_feats) {
+    const v = xByName[f];
+    if (v < ranges[f].min - 1e-9 || v > ranges[f].max + 1e-9) {
+      oor.push(`<strong>${f}</strong> = ${v} outside training range [${ranges[f].min}, ${ranges[f].max}]`);
+    }
+  }
+  const noFiberWarn = cfgIdx === 3
+    ? 'The no-fibre regime is sparse in training data. Additional validation is advised for design.'
+    : null;
+
+  const r = document.getElementById('result');
+  const alreadyBuilt = r.querySelector('[data-metric="vu"]') !== null;
+
+  const numFmt = v => fmtKN(v);
+  const plotTraces = () => {
+    const levels = model.gamma_crc.map(g => g.label);
+    const los    = model.gamma_crc.map(g => vu / g.gamma_crc);
+    const his    = model.gamma_crc.map(g => vu * g.gamma_crc);
+    const shades = ['#d6e7f7', '#b8d3ee', '#8fbce3', '#6aa3d8', '#4A90D9'];
+    return { levels, los, his,
+      traces: levels.map((lvl, i) => ({
+        y: [lvl], x: [his[i] - los[i]], base: los[i], orientation: 'h',
+        type: 'bar', marker: { color: shades[i] },
+        hovertemplate: `<b>${lvl}</b><br>[${los[i].toFixed(1)}, ${his[i].toFixed(1)}] kN<extra></extra>`,
+        showlegend: false,
+      })) };
+  };
+  const plotLayout = levelsLen => ({
+    margin: { l: 70, r: 30, t: 30, b: 50 },
+    plot_bgcolor: 'white', paper_bgcolor: 'white',
+    xaxis: { title: { text: 'Shear capacity V<sub>u</sub> [kN]', font: { size: 13, color: '#444' } },
+             gridcolor: '#f0f0f0', zeroline: false, tickfont: { size: 11, color: '#666' } },
+    yaxis: { title: { text: 'Confidence level', font: { size: 13, color: '#444' } },
+             autorange: 'reversed', tickfont: { size: 11, color: '#444' } },
+    shapes: [{ type: 'line', x0: vu, x1: vu, y0: -0.5, y1: levelsLen - 0.5,
+               line: { color: '#222', width: 2, dash: 'dash' } }],
+    annotations: [{ x: vu, y: -0.5, yref: 'y',
+      text: `<b>V<sub>u</sub> = ${fmtKN(vu)} kN</b>`,
+      showarrow: false, yshift: 10,
+      font: { color: '#222', size: 13, family: 'Noto Sans' } }],
+    bargap: 0.45, font: { family: 'Noto Sans, sans-serif' },
+  });
+
+  // ── Fast path: live update (DOM already present) ─────────
+  if (alreadyBuilt) {
+    const vuEl  = r.querySelector('[data-metric="vu"]');
+    const vLoEl = r.querySelector('[data-metric="vlo"]');
+    const vHiEl = r.querySelector('[data-metric="vhi"]');
+    const cfgEl = r.querySelector('[data-metric="cfg"]');
+    const loLbl = r.querySelector('[data-label="lo"]');
+    const hiLbl = r.querySelector('[data-label="hi"]');
+
+    animateCountUp(vuEl,  vu,  { fmt: v => `${numFmt(v)}<span class="unit">kN</span>` });
+    animateCountUp(vLoEl, vLo, { fmt: v => `${numFmt(v)}<span class="unit">kN</span>` });
+    animateCountUp(vHiEl, vHi, { fmt: v => `${numFmt(v)}<span class="unit">kN</span>` });
+    if (loLbl) loLbl.textContent = `Lower bound (${conf})`;
+    if (hiLbl) hiLbl.textContent = `Upper bound (${conf})`;
+    if (cfgEl && cfgEl.textContent !== cfgName) cfgEl.textContent = cfgName;
+
+    // Design equation + caption
+    const eqHost = r.querySelector('[data-eq="design"]');
+    if (eqHost) {
+      eqHost.innerHTML =
+        `$$V_d \\;=\\; \\dfrac{V_u}{\\gamma_{CRC}}
+             \\;=\\; \\dfrac{${vu.toFixed(1)}}{${gamma_crc.toFixed(3)}}
+             \\;=\\; ${vDesign.toFixed(1)}\\ \\text{kN}$$`;
+    }
+    const eqProb = r.querySelector('[data-eq="prob"]');
+    if (eqProb) {
+      eqProb.innerHTML =
+        `$$\\Pr\\!\\left(V_{\\text{true}} \\,\\geq\\, V_d\\right) \\;\\geq\\; ${(1 - alpha).toFixed(2)}
+           \\quad\\text{(finite-sample, distribution-free)}$$`;
+    }
+    const capEl = r.querySelector('[data-eq="cap"]');
+    if (capEl) {
+      capEl.innerHTML =
+        `Conformal safety factor $\\gamma_{CRC} = ${gamma_crc.toFixed(3)}$ at the ${conf} level.
+         Achieved PICP on held-out folds: ${picp.toFixed(3)}.`;
+    }
+    if (window.renderMathInElement) {
+      [eqHost, eqProb, capEl].filter(Boolean).forEach(el => renderMathInElement(el, {
+        delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+        throwOnError: false,
+      }));
+    }
+
+    // Caveats
+    const cavBox = r.querySelector('[data-caveats]');
+    if (oor.length > 0 || noFiberWarn) {
+      const items =
+        oor.map(w => `<li style="margin-bottom:0.3rem;">• ${w}</li>`).join('') +
+        (noFiberWarn ? `<li>• ${noFiberWarn}</li>` : '');
+      if (cavBox) {
+        cavBox.style.display = '';
+        cavBox.querySelector('ul').innerHTML = items;
+      }
+    } else if (cavBox) {
+      cavBox.style.display = 'none';
+    }
+
+    const { levels, traces } = plotTraces();
+    Plotly.react('intervalsPlot', traces, plotLayout(levels.length), { responsive: true, displayModeBar: false });
+    return;
+  }
+
+  // ── Initial render: full DOM build ────────────────────────
+  const html = `
+    <section class="fadein">
+      <p class="section-label">Prediction</p>
+      <div class="grid grid-4" style="margin-bottom: 1rem;">
+        <div class="metric-card primary">
+          <div class="label">Predicted $V_u$</div>
+          <div class="value" data-metric="vu" data-val="${vu}">${fmtKN(vu)}<span class="unit">kN</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="label" data-label="lo">Lower bound (${conf})</div>
+          <div class="value" data-metric="vlo" data-val="${vLo}">${fmtKN(vLo)}<span class="unit">kN</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="label" data-label="hi">Upper bound (${conf})</div>
+          <div class="value" data-metric="vhi" data-val="${vHi}">${fmtKN(vHi)}<span class="unit">kN</span></div>
+        </div>
+        <div class="metric-card accent-green">
+          <div class="label">Configuration</div>
+          <div class="value" data-metric="cfg" style="font-size:1.05rem; line-height:1.25; padding-top:0.4rem;">${cfgName}</div>
+        </div>
+      </div>
+
+      <div class="demo-surface">
+        <p class="section-label">Design-resistance lower bound</p>
+        <div class="eq-center eq-big" style="margin:0.5rem 0 1rem 0;" data-eq="design">
+          $$V_d \\;=\\; \\dfrac{V_u}{\\gamma_{CRC}}
+              \\;=\\; \\dfrac{${vu.toFixed(1)}}{${gamma_crc.toFixed(3)}}
+              \\;=\\; ${vDesign.toFixed(1)}\\ \\text{kN}$$
+        </div>
+        <div class="eq-center" style="color:#555;" data-eq="prob">
+          $$\\Pr\\!\\left(V_{\\text{true}} \\,\\geq\\, V_d\\right) \\;\\geq\\; ${(1 - alpha).toFixed(2)}
+          \\quad\\text{(finite-sample, distribution-free)}$$
+        </div>
+        <p class="caption" style="margin-top: 0.9rem;" data-eq="cap">
+          Conformal safety factor $\\gamma_{CRC} = ${gamma_crc.toFixed(3)}$ at the ${conf} level.
+          Achieved PICP on held-out folds: ${picp.toFixed(3)}.
+        </p>
+      </div>
+
+      <div class="demo-surface">
+        <p class="section-label">Conformal prediction intervals</p>
+        <div id="intervalsPlot" style="width:100%; height:300px;"></div>
+      </div>
+
+      <div class="demo-surface" data-caveats style="border-left:4px solid #e3b33a; background:#fff9e6; ${oor.length || noFiberWarn ? '' : 'display:none;'}">
+        <p class="section-label" style="color:#8a6800;">Caveats</p>
+        <ul style="list-style:none; padding:0; margin:0; color:#444; font-size:0.92rem; line-height:1.55;">
+          ${oor.map(w => `<li style="margin-bottom:0.3rem;">• ${w}</li>`).join('')}
+          ${noFiberWarn ? `<li>• ${noFiberWarn}</li>` : ''}
+        </ul>
+      </div>
+    </section>`;
+  r.innerHTML = html;
+  if (window.renderMathInElement) {
+    renderMathInElement(r, {
+      delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+      throwOnError: false,
+    });
+  }
+  const { levels, traces } = plotTraces();
+  Plotly.newPlot('intervalsPlot', traces, plotLayout(levels.length), { responsive: true, displayModeBar: false });
+}
+
+applyPreset('fiber_only');
+runPredict({ scroll: false });
+</script>
+</body>
+</html>
